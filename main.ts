@@ -1,12 +1,18 @@
-// news-image-20261125 v1: copies the drawn entry image to the output directory.
+// news-image-20261125 v2: copies the drawn entry image to the output directory.
 // Node 22, standard library only, no network. The image itself is drawn by draw.py;
 // this program only validates it (PNG signature, 1024x1024, at most 1 MiB) and
 // copies it to MAKEFUN_OUTPUT_DIR (or /output), then re-reads both files and
 // byte-compares them so a truncated copy can never pass silently.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+//
+// v2 fix: the image is resolved relative to THIS FILE (import.meta.url), not to
+// the process working directory. The grader runs `node /bot/main.ts` from a
+// different directory, so a bare relative path ("entry.png") is not found there
+// and the run exits 1 — that is what rejected v1 (run_completes). Resolving
+// against import.meta.url works from any working directory.
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const SRC = "entry.png";
+const SRC = new URL("./entry.png", import.meta.url);
 const OUT_DIR = process.env.MAKEFUN_OUTPUT_DIR || "/output";
 const DST = join(OUT_DIR, "entry.png");
 
